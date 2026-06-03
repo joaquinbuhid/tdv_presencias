@@ -24,8 +24,10 @@ $telefono   = trim($data['telefono']    ?? '');
 $email      = trim($data['email']       ?? '');
 $usuario    = trim($data['usuario']     ?? '');
 $contrasena = $data['contrasena']       ?? '';
-$obj_id     = isset($data['objetivo_id']) && $data['objetivo_id'] !== ''
-              ? (int)$data['objetivo_id'] : null;
+$obj_id       = isset($data['objetivo_id']) && $data['objetivo_id'] !== ''
+                ? (int)$data['objetivo_id'] : null;
+$hora_entrada = trim($data['hora_entrada'] ?? '');
+$hora_salida  = trim($data['hora_salida']  ?? '');
 
 if (!$nombre || !$apellido || !$dni || !$usuario) {
     http_response_code(400);
@@ -68,10 +70,11 @@ if ($id === 0) {
     // CREAR
     $hash = password_hash($contrasena, PASSWORD_DEFAULT);
     $stmt = $db->prepare(
-        "INSERT INTO vigiladores (nombre, apellido, dni, telefono, email, usuario, contrasena, objetivo_id, activo, pendiente)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 0)"
+        "INSERT INTO vigiladores (nombre, apellido, dni, telefono, email, usuario, contrasena, objetivo_id, hora_entrada, hora_salida, activo, pendiente)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0)"
     );
-    $stmt->execute([$nombre, $apellido, $dni, $telefono ?: null, $email ?: null, $usuario, $hash, $obj_id]);
+    $stmt->execute([$nombre, $apellido, $dni, $telefono ?: null, $email ?: null, $usuario, $hash, $obj_id,
+                    $hora_entrada ?: null, $hora_salida ?: null]);
     echo json_encode(['success' => true, 'id' => $db->lastInsertId(), 'accion' => 'creado']);
 } else {
     // EDITAR
@@ -79,17 +82,19 @@ if ($id === 0) {
         $hash = password_hash($contrasena, PASSWORD_DEFAULT);
         $stmt = $db->prepare(
             "UPDATE vigiladores
-             SET nombre=?, apellido=?, dni=?, telefono=?, email=?, usuario=?, contrasena=?, objetivo_id=?
+             SET nombre=?, apellido=?, dni=?, telefono=?, email=?, usuario=?, contrasena=?, objetivo_id=?, hora_entrada=?, hora_salida=?
              WHERE id_vigilador=?"
         );
-        $stmt->execute([$nombre, $apellido, $dni, $telefono ?: null, $email ?: null, $usuario, $hash, $obj_id, $id]);
+        $stmt->execute([$nombre, $apellido, $dni, $telefono ?: null, $email ?: null, $usuario, $hash,
+                        $obj_id, $hora_entrada ?: null, $hora_salida ?: null, $id]);
     } else {
         $stmt = $db->prepare(
             "UPDATE vigiladores
-             SET nombre=?, apellido=?, dni=?, telefono=?, email=?, usuario=?, objetivo_id=?
+             SET nombre=?, apellido=?, dni=?, telefono=?, email=?, usuario=?, objetivo_id=?, hora_entrada=?, hora_salida=?
              WHERE id_vigilador=?"
         );
-        $stmt->execute([$nombre, $apellido, $dni, $telefono ?: null, $email ?: null, $usuario, $obj_id, $id]);
+        $stmt->execute([$nombre, $apellido, $dni, $telefono ?: null, $email ?: null, $usuario,
+                        $obj_id, $hora_entrada ?: null, $hora_salida ?: null, $id]);
     }
     echo json_encode(['success' => true, 'id' => $id, 'accion' => 'actualizado']);
 }

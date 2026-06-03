@@ -61,6 +61,12 @@ $adminNombre = $_SESSION['nombre_completo'] ?? 'Administrador';
         }
         .section-title { font-size:1rem;font-weight:700;color:var(--primary); }
 
+        .turno-pill {
+            background:var(--bg);border:1px solid var(--border);
+            border-radius:6px;padding:.15rem .55rem;
+            font-size:.78rem;font-family:monospace;white-space:nowrap;
+        }
+
         /* Pending banner */
         .pending-banner {
             background:#fef9e7;border:1px solid #f6c90e;
@@ -205,6 +211,17 @@ $adminNombre = $_SESSION['nombre_completo'] ?? 'Administrador';
                 </div>
             </div>
 
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="fHoraEntrada">Hora de entrada</label>
+                    <input type="time" id="fHoraEntrada">
+                </div>
+                <div class="form-group">
+                    <label for="fHoraSalida">Hora de salida</label>
+                    <input type="time" id="fHoraSalida">
+                </div>
+            </div>
+
             <div style="display:flex;gap:.8rem;justify-content:flex-end;margin-top:1rem;">
                 <button type="button" class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
                 <button type="submit" class="btn btn-primary" id="btnGuardar" style="width:auto;min-width:120px;">
@@ -270,12 +287,16 @@ async function cargarVigiladores() {
                     <button class="btn btn-outline btn-sm" onclick="abrirModal(${v.id_vigilador})">&#9998; Editar</button>
                     <button class="btn btn-success btn-sm" onclick="toggleEstado(${v.id_vigilador},'activar')">&#9654; Activar</button>`;
             }
+            const turno = (v.hora_entrada && v.hora_salida)
+                ? `<span class="turno-pill">${v.hora_entrada.substr(0,5)} — ${v.hora_salida.substr(0,5)}</span>`
+                : '<span style="color:var(--text-muted)">—</span>';
             const bg = v.pendiente == 1 ? 'background:#fffde7;' : '';
             return `<tr style="${bg}">
                 <td><strong>${esc(v.apellido)}, ${esc(v.nombre)}</strong><br>
                     <small style="color:var(--text-muted);">@${esc(v.usuario)}</small></td>
                 <td>${esc(v.dni)}</td>
                 <td>${esc(v.objetivo_nombre || '—')}</td>
+                <td>${turno}</td>
                 <td>${estadoPill}</td>
                 <td><div class="actions">${acciones}</div></td>
             </tr>`;
@@ -287,6 +308,7 @@ async function cargarVigiladores() {
                     <th>Nombre / Usuario</th>
                     <th>DNI</th>
                     <th>Objetivo</th>
+                    <th>Turno</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                 </tr></thead>
@@ -313,13 +335,15 @@ function abrirModal(id) {
         apiFetch('api/get_vigiladores.php').then(list => {
             const v = list.find(x => x.id_vigilador == id);
             if (!v) return;
-            document.getElementById('fNombre').value   = v.nombre;
-            document.getElementById('fApellido').value = v.apellido;
-            document.getElementById('fDni').value      = v.dni;
-            document.getElementById('fTelefono').value = v.telefono || '';
-            document.getElementById('fEmail').value    = v.email    || '';
-            document.getElementById('fUsuario').value  = v.usuario;
-            document.getElementById('fObjetivo').value = v.objetivo_id || '';
+            document.getElementById('fNombre').value      = v.nombre;
+            document.getElementById('fApellido').value   = v.apellido;
+            document.getElementById('fDni').value         = v.dni;
+            document.getElementById('fTelefono').value   = v.telefono || '';
+            document.getElementById('fEmail').value       = v.email    || '';
+            document.getElementById('fUsuario').value     = v.usuario;
+            document.getElementById('fObjetivo').value   = v.objetivo_id || '';
+            document.getElementById('fHoraEntrada').value = v.hora_entrada ? v.hora_entrada.substr(0,5) : '';
+            document.getElementById('fHoraSalida').value  = v.hora_salida  ? v.hora_salida.substr(0,5)  : '';
         });
     }
 
@@ -341,15 +365,17 @@ async function onGuardar(e) {
     const errDiv = document.getElementById('modalError');
     errDiv.classList.remove('show');
 
-    const id       = parseInt(document.getElementById('fId').value);
-    const nombre   = document.getElementById('fNombre').value.trim();
-    const apellido = document.getElementById('fApellido').value.trim();
-    const dni      = document.getElementById('fDni').value.trim();
-    const telefono = document.getElementById('fTelefono').value.trim();
-    const email    = document.getElementById('fEmail').value.trim();
-    const usuario  = document.getElementById('fUsuario').value.trim();
-    const pass     = document.getElementById('fPass').value;
-    const obj_id   = document.getElementById('fObjetivo').value;
+    const id          = parseInt(document.getElementById('fId').value);
+    const nombre      = document.getElementById('fNombre').value.trim();
+    const apellido    = document.getElementById('fApellido').value.trim();
+    const dni         = document.getElementById('fDni').value.trim();
+    const telefono    = document.getElementById('fTelefono').value.trim();
+    const email       = document.getElementById('fEmail').value.trim();
+    const usuario     = document.getElementById('fUsuario').value.trim();
+    const pass        = document.getElementById('fPass').value;
+    const obj_id      = document.getElementById('fObjetivo').value;
+    const horaEntrada = document.getElementById('fHoraEntrada').value;
+    const horaSalida  = document.getElementById('fHoraSalida').value;
 
     if (!nombre || !apellido || !dni || !usuario) {
         document.getElementById('modalErrorMsg').textContent = 'Complete todos los campos obligatorios.';
@@ -367,8 +393,10 @@ async function onGuardar(e) {
     try {
         await apiFetch('api/guardar_vigilador.php', 'POST', {
             id, nombre, apellido, dni, telefono, email, usuario,
-            contrasena: pass,
-            objetivo_id: obj_id !== '' ? obj_id : null
+            contrasena:   pass,
+            objetivo_id:  obj_id     !== '' ? obj_id     : null,
+            hora_entrada: horaEntrada !== '' ? horaEntrada : null,
+            hora_salida:  horaSalida  !== '' ? horaSalida  : null,
         });
         cerrarModal();
         mostrarExito(id ? 'Vigilador actualizado.' : 'Vigilador creado.');

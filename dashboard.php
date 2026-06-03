@@ -14,8 +14,8 @@ require_once 'config/db.php';
 // Cargar datos del vigilador y su objetivo
 $db   = getDB();
 $stmt = $db->prepare(
-    "SELECT v.nombre, v.apellido,
-            o.nombre AS obj_nombre, o.hora_entrada, o.hora_salida, o.radio_metros
+    "SELECT v.nombre, v.apellido, v.hora_entrada, v.hora_salida,
+            o.nombre AS obj_nombre, o.radio_metros
      FROM vigiladores v
      LEFT JOIN objetivo o ON v.objetivo_id = o.id_objetivo
      WHERE v.id_vigilador = ?"

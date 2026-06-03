@@ -14,8 +14,8 @@ $stmt = $db->query(
     "SELECT
         v.id_vigilador, v.nombre, v.apellido,
         o.id_objetivo, o.nombre  AS objetivo_nombre,
-        o.hora_entrada           AS turno_entrada,
-        o.hora_salida            AS turno_salida,
+        v.hora_entrada           AS turno_entrada,
+        v.hora_salida            AS turno_salida,
         MAX(CASE WHEN tn.nombre = 'Entrada' THEN n.hora END) AS hora_entrada_hoy,
         MAX(CASE WHEN tn.nombre = 'Salida'  THEN n.hora END) AS hora_salida_hoy,
         MAX(n.hora)              AS ultima_actividad,

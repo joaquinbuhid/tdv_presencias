@@ -46,12 +46,6 @@ $adminNombre = $_SESSION['nombre_completo'] ?? 'Administrador';
         }
         .coord-link:hover { text-decoration:underline; }
 
-        .turno-badge {
-            background:var(--bg);border:1px solid var(--border);
-            border-radius:6px;padding:.15rem .55rem;font-size:.78rem;
-            color:var(--text);white-space:nowrap;font-family:monospace;
-        }
-
         .radio-badge {
             background:#ebf5fb;color:#1a5276;
             border-radius:20px;padding:.15rem .65rem;
@@ -205,17 +199,6 @@ $adminNombre = $_SESSION['nombre_completo'] ?? 'Administrador';
                 </p>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="fEntrada">Hora de entrada <span style="color:var(--danger)">*</span></label>
-                    <input type="time" id="fEntrada" required>
-                </div>
-                <div class="form-group">
-                    <label for="fSalida">Hora de salida <span style="color:var(--danger)">*</span></label>
-                    <input type="time" id="fSalida" required>
-                </div>
-            </div>
-
             <div style="display:flex;gap:.8rem;justify-content:flex-end;margin-top:1rem;">
                 <button type="button" class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
                 <button type="submit" class="btn btn-primary" id="btnGuardar" style="width:auto;min-width:120px;">
@@ -257,11 +240,6 @@ async function cargarObjetivos() {
                     </a>
                 </td>
                 <td><span class="radio-badge">${esc(o.radio_metros)} m</span></td>
-                <td>
-                    <span class="turno-badge">
-                        ${o.hora_entrada.substr(0,5)} &mdash; ${o.hora_salida.substr(0,5)}
-                    </span>
-                </td>
                 <td style="text-align:center;">
                     <span style="font-weight:${asig>0?'700':'400'};color:${asig>0?'var(--primary)':'var(--text-muted)'}">
                         ${asig}
@@ -285,7 +263,6 @@ async function cargarObjetivos() {
                     <th>Nombre</th>
                     <th>Coordenadas</th>
                     <th>Radio</th>
-                    <th>Turno</th>
                     <th style="text-align:center;">Vigiladores</th>
                     <th>Acciones</th>
                 </tr></thead>
@@ -346,10 +323,7 @@ async function onGuardar(e) {
     const lat         = document.getElementById('fLat').value.trim();
     const lng         = document.getElementById('fLng').value.trim();
     const radio       = document.getElementById('fRadio').value.trim();
-    const entrada     = document.getElementById('fEntrada').value;
-    const salida      = document.getElementById('fSalida').value;
-
-    if (!nombre || !lat || !lng || !radio || !entrada || !salida) {
+    if (!nombre || !lat || !lng || !radio) {
         document.getElementById('modalErrorMsg').textContent = 'Complete todos los campos obligatorios.';
         errDiv.classList.add('show'); return;
     }
@@ -364,8 +338,6 @@ async function onGuardar(e) {
             coord_lat:    parseFloat(lat),
             coord_long:   parseFloat(lng),
             radio_metros: parseInt(radio),
-            hora_entrada: entrada,
-            hora_salida:  salida,
         });
         cerrarModal();
         mostrarExito(id ? 'Objetivo actualizado.' : 'Objetivo creado.');

@@ -23,8 +23,7 @@ $db   = getDB();
 $stmt = $db->prepare(
     "SELECT v.id_vigilador, v.nombre, v.apellido, v.contrasena,
             v.activo, v.pendiente, v.es_admin,
-            o.id_objetivo, o.nombre AS objetivo_nombre,
-            o.hora_entrada, o.hora_salida
+            o.id_objetivo, o.nombre AS objetivo_nombre
      FROM vigiladores v
      LEFT JOIN objetivo o ON v.objetivo_id = o.id_objetivo
      WHERE v.usuario = ?"
