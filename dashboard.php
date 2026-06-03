@@ -4,6 +4,10 @@ if (!isset($_SESSION['vigilador_id'])) {
     header('Location: index.php');
     exit;
 }
+if (!empty($_SESSION['es_admin'])) {
+    header('Location: admin/dashboard.php');
+    exit;
+}
 
 require_once 'config/db.php';
 

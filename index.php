@@ -54,7 +54,10 @@ if (isset($_SESSION['vigilador_id'])) {
             </button>
         </form>
 
-        <p class="app-footer" style="margin-top:1.5rem;">
+        <p style="text-align:center;margin-top:1.2rem;font-size:.88rem;color:var(--text-muted);">
+            ¿Primera vez? <a href="registro.php" style="color:var(--accent);">Solicitar cuenta</a>
+        </p>
+        <p class="app-footer" style="margin-top:.8rem;">
             Versión 1.0 &mdash; <?= date('Y') ?>
         </p>
     </div>
@@ -91,7 +94,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 
         if (res.ok && data.success) {
             btn.textContent = 'Accediendo...';
-            window.location.href = 'dashboard.php';
+            window.location.href = data.es_admin ? 'admin/dashboard.php' : 'dashboard.php';
         } else {
             errMsg.textContent = data.error || 'Error al iniciar sesión.';
             errDiv.classList.add('show');

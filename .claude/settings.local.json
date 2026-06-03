@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\Ariel\\\\Documents\\\\joaquin\\\\TDV\\\\admin\\\\api\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Users\\\\Ariel\\\\Documents\\\\joaquin\\\\TDV\\\\admin\\\\css\")"
+    ]
+  }
+}
