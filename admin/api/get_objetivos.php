@@ -10,5 +10,19 @@ if (empty($_SESSION['es_admin'])) {
 }
 
 $db   = getDB();
-$stmt = $db->query("SELECT id_objetivo, nombre, descripcion FROM objetivo ORDER BY nombre");
+// full=1 devuelve todos los campos + cantidad de vigiladores asignados
+$full = isset($_GET['full']) && $_GET['full'] == '1';
+
+if ($full) {
+    $stmt = $db->query(
+        "SELECT o.*,
+                COUNT(v.id_vigilador) AS vigiladores_asignados
+         FROM objetivo o
+         LEFT JOIN vigiladores v ON v.objetivo_id = o.id_objetivo AND v.activo = 1 AND v.pendiente = 0
+         GROUP BY o.id_objetivo
+         ORDER BY o.nombre"
+    );
+} else {
+    $stmt = $db->query("SELECT id_objetivo, nombre FROM objetivo ORDER BY nombre");
+}
 echo json_encode($stmt->fetchAll());
