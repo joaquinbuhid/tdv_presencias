@@ -154,9 +154,21 @@ $adminNombre = $_SESSION['nombre_completo'] ?? 'Administrador';
 
 <div style="max-width:1200px;margin:0 auto;padding:1.2rem 1rem 2rem;">
 
-    <h2 style="font-size:1.2rem;color:var(--primary);margin-bottom:1rem;">
-        Presencias — <span id="fechaHoy"></span>
-    </h2>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem;">
+        <h2 style="font-size:1.2rem;color:var(--primary);margin:0;">
+            Presencias — <span id="fechaHoy"></span>
+        </h2>
+        <div style="display:flex;align-items:center;gap:.5rem;
+                    background:var(--card);border-radius:10px;
+                    padding:.45rem 1rem;box-shadow:var(--shadow);">
+            <span style="font-size:.75rem;color:var(--text-muted);">Hora actual</span>
+            <span id="adminReloj" style="
+                font-size:1.4rem;font-weight:700;color:var(--primary);
+                font-variant-numeric:tabular-nums;letter-spacing:.03em;">
+                --:--:--
+            </span>
+        </div>
+    </div>
 
     <!-- Resumen -->
     <div class="summary-strip">
@@ -205,6 +217,19 @@ let timer;
 document.getElementById('fechaHoy').textContent = new Date().toLocaleDateString('es-AR', {
     weekday:'long', year:'numeric', month:'long', day:'numeric'
 });
+
+// Reloj en tiempo real
+(function reloj() {
+    function tick() {
+        const n  = new Date();
+        const hh = String(n.getHours()).padStart(2,'0');
+        const mm = String(n.getMinutes()).padStart(2,'0');
+        const ss = String(n.getSeconds()).padStart(2,'0');
+        document.getElementById('adminReloj').textContent = `${hh}:${mm}:${ss}`;
+    }
+    tick();
+    setInterval(tick, 1000);
+})();
 
 async function refrescar() {
     clearInterval(timer);

@@ -51,6 +51,16 @@ $vigi = $stmt->fetch();
 <!-- CONTENIDO -->
 <main class="app-content">
 
+    <!-- Reloj -->
+    <div style="text-align:center;padding:.8rem 0 .2rem;">
+        <div id="relojHora" style="
+            font-size:2.8rem;font-weight:700;letter-spacing:.05em;
+            color:var(--primary);font-variant-numeric:tabular-nums;line-height:1;">
+            --:--:--
+        </div>
+        <div id="relojFecha" style="font-size:.82rem;color:var(--text-muted);margin-top:.2rem;"></div>
+    </div>
+
     <!-- Objetivo asignado -->
     <div style="text-align:center; padding:.5rem 0 .2rem;">
         <span class="objetivo-badge">
@@ -116,6 +126,23 @@ $vigi = $stmt->fetch();
 <footer class="app-footer">TDV Seguridad &mdash; <?= date('d/m/Y') ?></footer>
 
 <script src="js/app.js"></script>
+<script>
+(function reloj() {
+    const DIAS   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    const MESES  = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    function tick() {
+        const n  = new Date();
+        const hh = String(n.getHours()).padStart(2,'0');
+        const mm = String(n.getMinutes()).padStart(2,'0');
+        const ss = String(n.getSeconds()).padStart(2,'0');
+        document.getElementById('relojHora').textContent  = `${hh}:${mm}:${ss}`;
+        document.getElementById('relojFecha').textContent =
+            `${DIAS[n.getDay()]} ${n.getDate()} de ${MESES[n.getMonth()]} de ${n.getFullYear()}`;
+    }
+    tick();
+    setInterval(tick, 1000);
+})();
+</script>
 
 </body>
 </html>

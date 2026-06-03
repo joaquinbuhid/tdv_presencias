@@ -1,4 +1,6 @@
 <?php
+date_default_timezone_set('America/Argentina/Buenos_Aires');
+
 // Configuración de la base de datos
 define('DB_HOST', 'srv847.hstgr.io');
 define('DB_USER', 'u331324140_presencias');
