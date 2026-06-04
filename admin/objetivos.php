@@ -176,6 +176,22 @@ $adminNombre = $_SESSION['nombre_completo'] ?? 'Administrador';
                 <textarea id="fDescripcion" rows="2" placeholder="Descripción del puesto..."></textarea>
             </div>
 
+            <!-- Botón GPS -->
+            <div style="margin-bottom:.8rem;">
+                <button type="button" id="btnGps"
+                    style="display:inline-flex;align-items:center;gap:.5rem;
+                           background:#ebf5fb;color:#1a5276;border:1.5px solid #bee3f8;
+                           border-radius:8px;padding:.55rem 1.1rem;font-size:.88rem;
+                           font-weight:600;cursor:pointer;transition:background .2s;"
+                    onmouseover="this.style.background='#d6eaf8'"
+                    onmouseout="this.style.background='#ebf5fb'"
+                    onclick="obtenerGPS()">
+                    <span id="gpsIcon">&#x1F4CD;</span>
+                    <span id="gpsTxt">Usar mi ubicación actual</span>
+                </button>
+                <span id="gpsStatus" style="font-size:.78rem;color:var(--text-muted);margin-left:.6rem;"></span>
+            </div>
+
             <div class="form-row">
                 <div class="form-group">
                     <label for="fLat">Latitud <span style="color:var(--danger)">*</span></label>
@@ -420,6 +436,55 @@ async function apiFetch(url, method = 'GET', data = null) {
 function esc(s) {
     if (!s) return '';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ---- GPS para coordenadas del objetivo -------------------
+function obtenerGPS() {
+    if (!navigator.geolocation) {
+        document.getElementById('gpsStatus').textContent = 'Geolocalización no disponible en este navegador.';
+        return;
+    }
+
+    const btn    = document.getElementById('btnGps');
+    const icon   = document.getElementById('gpsIcon');
+    const txt    = document.getElementById('gpsTxt');
+    const status = document.getElementById('gpsStatus');
+
+    btn.disabled      = true;
+    icon.innerHTML    = '<span class="spinner spinner-dark" style="width:14px;height:14px;border-width:2px;"></span>';
+    txt.textContent   = 'Obteniendo ubicación...';
+    status.textContent = '';
+
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            const acc = Math.round(pos.coords.accuracy);
+
+            document.getElementById('fLat').value = lat.toFixed(8);
+            document.getElementById('fLng').value = lng.toFixed(8);
+
+            icon.textContent   = '✅';
+            txt.textContent    = 'Ubicación obtenida';
+            status.innerHTML   = `Precisión: <strong>${acc} m</strong> &nbsp;·&nbsp;
+                <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank"
+                   style="color:var(--accent);font-size:.78rem;">Ver en mapa</a>`;
+            btn.disabled = false;
+        },
+        (err) => {
+            const msgs = {
+                1: 'Permiso denegado. Habilite la ubicación en el navegador.',
+                2: 'No se pudo obtener la ubicación. Verifique que el GPS esté activo.',
+                3: 'Tiempo de espera agotado.'
+            };
+            icon.textContent  = '📍';
+            txt.textContent   = 'Usar mi ubicación actual';
+            status.textContent = msgs[err.code] || 'Error al obtener ubicación.';
+            status.style.color = 'var(--danger)';
+            btn.disabled = false;
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
 }
 </script>
 </body>
