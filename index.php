@@ -22,7 +22,6 @@ if (isset($_SESSION['vigilador_id'])) {
     <div class="login-card">
 
         <div class="login-logo">
-            <span class="shield">&#x1F6E1;</span>
             <h1>TDV Seguridad</h1>
             <p>Sistema de Asistencias</p>
         </div>
