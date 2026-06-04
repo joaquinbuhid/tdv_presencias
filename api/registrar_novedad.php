@@ -44,21 +44,7 @@ if (!$tipo) {
     exit;
 }
 
-// --- Verificación 1: el IP no haya registrado este tipo de novedad hoy ---
-$stmt = $db->prepare(
-    "SELECT id_novedad FROM novedades
-     WHERE ip_dispositivo = ? AND tipo = ? AND fecha = ?"
-);
-$stmt->execute([$ip, $tipo_id, $fecha]);
-if ($stmt->fetch()) {
-    http_response_code(409);
-    echo json_encode([
-        'error' => "Este dispositivo (IP: $ip) ya registró \"{$tipo['nombre']}\" el día de hoy."
-    ]);
-    exit;
-}
-
-// También verificar que el vigilador mismo no haya registrado este tipo hoy
+// --- Verificación: el vigilador no haya registrado este tipo hoy ---
 $stmt = $db->prepare(
     "SELECT id_novedad FROM novedades
      WHERE vigilador_id = ? AND tipo = ? AND fecha = ?"
