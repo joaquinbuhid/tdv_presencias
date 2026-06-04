@@ -15,13 +15,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$data        = json_decode(file_get_contents('php://input'), true);
-$id          = isset($data['id'])           ? (int)$data['id']           : 0;
-$nombre      = trim($data['nombre']         ?? '');
-$descripcion = trim($data['descripcion']    ?? '');
-$coord_lat   = isset($data['coord_lat'])    ? (float)$data['coord_lat']  : null;
-$coord_long  = isset($data['coord_long'])   ? (float)$data['coord_long'] : null;
-$radio       = isset($data['radio_metros']) ? (int)$data['radio_metros'] : 200;
+$data          = json_decode(file_get_contents('php://input'), true);
+$id            = isset($data['id'])            ? (int)$data['id']           : 0;
+$nombre        = trim($data['nombre']          ?? '');
+$descripcion   = trim($data['descripcion']     ?? '');
+$coord_lat     = isset($data['coord_lat'])     ? (float)$data['coord_lat']  : null;
+$coord_long    = isset($data['coord_long'])    ? (float)$data['coord_long'] : null;
+$radio         = isset($data['radio_metros'])  ? (int)$data['radio_metros'] : 200;
+$supervisor_id = isset($data['supervisor_id']) && $data['supervisor_id'] !== ''
+                 ? (int)$data['supervisor_id'] : null;
 
 if (!$nombre) {
     http_response_code(400);
@@ -53,17 +55,17 @@ $db = getDB();
 
 if ($id === 0) {
     $stmt = $db->prepare(
-        "INSERT INTO objetivo (nombre, descripcion, coord_lat, coord_long, radio_metros)
-         VALUES (?, ?, ?, ?, ?)"
+        "INSERT INTO objetivo (nombre, descripcion, coord_lat, coord_long, radio_metros, supervisor_id)
+         VALUES (?, ?, ?, ?, ?, ?)"
     );
-    $stmt->execute([$nombre, $descripcion ?: null, $coord_lat, $coord_long, $radio]);
+    $stmt->execute([$nombre, $descripcion ?: null, $coord_lat, $coord_long, $radio, $supervisor_id]);
     echo json_encode(['success' => true, 'id' => $db->lastInsertId(), 'accion' => 'creado']);
 } else {
     $stmt = $db->prepare(
         "UPDATE objetivo
-         SET nombre=?, descripcion=?, coord_lat=?, coord_long=?, radio_metros=?
+         SET nombre=?, descripcion=?, coord_lat=?, coord_long=?, radio_metros=?, supervisor_id=?
          WHERE id_objetivo=?"
     );
-    $stmt->execute([$nombre, $descripcion ?: null, $coord_lat, $coord_long, $radio, $id]);
+    $stmt->execute([$nombre, $descripcion ?: null, $coord_lat, $coord_long, $radio, $supervisor_id, $id]);
     echo json_encode(['success' => true, 'id' => $id, 'accion' => 'actualizado']);
 }

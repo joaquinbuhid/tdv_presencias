@@ -16,9 +16,13 @@ $full = isset($_GET['full']) && $_GET['full'] == '1';
 if ($full) {
     $stmt = $db->query(
         "SELECT o.*,
-                COUNT(v.id_vigilador) AS vigiladores_asignados
+                COUNT(v.id_vigilador)                   AS vigiladores_asignados,
+                s.id_supervisor,
+                CONCAT(s.nombre,' ',s.apellido)         AS supervisor_nombre,
+                s.telefono                              AS supervisor_telefono
          FROM objetivo o
-         LEFT JOIN vigiladores v ON v.objetivo_id = o.id_objetivo AND v.activo = 1 AND v.pendiente = 0
+         LEFT JOIN vigiladores  v ON v.objetivo_id   = o.id_objetivo AND v.activo = 1 AND v.pendiente = 0
+         LEFT JOIN supervisores s ON s.id_supervisor = o.supervisor_id
          GROUP BY o.id_objetivo
          ORDER BY o.nombre"
     );

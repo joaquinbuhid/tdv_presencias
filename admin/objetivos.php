@@ -111,6 +111,7 @@ $adminNombre = $_SESSION['nombre_completo'] ?? 'Administrador';
     <div class="nav-links">
         <a href="dashboard.php">&#x1F7E2; En vivo</a>
         <a href="vigiladores.php">&#x1F464; Vigiladores</a>
+        <a href="supervisores.php">&#x1F4BC; Supervisores</a>
         <a href="objetivos.php" class="active">&#x1F3AF; Objetivos</a>
     </div>
     <div class="nav-user">
@@ -199,6 +200,13 @@ $adminNombre = $_SESSION['nombre_completo'] ?? 'Administrador';
                 </p>
             </div>
 
+            <div class="form-group">
+                <label for="fSupervisor">Supervisor asignado</label>
+                <select id="fSupervisor">
+                    <option value="">— Sin supervisor —</option>
+                </select>
+            </div>
+
             <div style="display:flex;gap:.8rem;justify-content:flex-end;margin-top:1rem;">
                 <button type="button" class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
                 <button type="submit" class="btn btn-primary" id="btnGuardar" style="width:auto;min-width:120px;">
@@ -213,7 +221,21 @@ $adminNombre = $_SESSION['nombre_completo'] ?? 'Administrador';
 document.addEventListener('DOMContentLoaded', () => {
     cargarObjetivos();
     document.getElementById('formObjetivo').addEventListener('submit', onGuardar);
+    cargarSupervisoresSelect();
 });
+
+async function cargarSupervisoresSelect() {
+    try {
+        const list = await apiFetch('api/get_supervisores.php');
+        const sel  = document.getElementById('fSupervisor');
+        list.filter(s => s.estado == 1).forEach(s => {
+            const opt = document.createElement('option');
+            opt.value       = s.id_supervisor;
+            opt.textContent = `${s.apellido}, ${s.nombre}`;
+            sel.appendChild(opt);
+        });
+    } catch(e) {}
+}
 
 // ---- Tabla ------------------------------------------------
 async function cargarObjetivos() {
@@ -229,6 +251,10 @@ async function cargarObjetivos() {
         const tbody = list.map(o => {
             const mapsUrl = `https://www.google.com/maps?q=${o.coord_lat},${o.coord_long}`;
             const asig = parseInt(o.vigiladores_asignados);
+            const supHtml = o.supervisor_nombre
+                ? `<span style="font-weight:600">${esc(o.supervisor_nombre)}</span>
+                   ${o.supervisor_telefono ? `<br><small style="color:var(--text-muted)">${esc(o.supervisor_telefono)}</small>` : ''}`
+                : `<span style="color:var(--text-muted)">—</span>`;
             return `<tr>
                 <td>
                     <strong>${esc(o.nombre)}</strong>
@@ -240,6 +266,7 @@ async function cargarObjetivos() {
                     </a>
                 </td>
                 <td><span class="radio-badge">${esc(o.radio_metros)} m</span></td>
+                <td>${supHtml}</td>
                 <td style="text-align:center;">
                     <span style="font-weight:${asig>0?'700':'400'};color:${asig>0?'var(--primary)':'var(--text-muted)'}">
                         ${asig}
@@ -263,6 +290,7 @@ async function cargarObjetivos() {
                     <th>Nombre</th>
                     <th>Coordenadas</th>
                     <th>Radio</th>
+                    <th>Supervisor</th>
                     <th style="text-align:center;">Vigiladores</th>
                     <th>Acciones</th>
                 </tr></thead>
@@ -293,6 +321,7 @@ async function abrirModal(id) {
                 document.getElementById('fLat').value         = o.coord_lat;
                 document.getElementById('fLng').value         = o.coord_long;
                 document.getElementById('fRadio').value       = o.radio_metros;
+                document.getElementById('fSupervisor').value  = o.supervisor_id || '';
                 document.getElementById('fEntrada').value     = o.hora_entrada.substr(0,5);
                 document.getElementById('fSalida').value      = o.hora_salida.substr(0,5);
             }
@@ -337,7 +366,8 @@ async function onGuardar(e) {
             id, nombre, descripcion,
             coord_lat:    parseFloat(lat),
             coord_long:   parseFloat(lng),
-            radio_metros: parseInt(radio),
+            radio_metros:  parseInt(radio),
+            supervisor_id: document.getElementById('fSupervisor').value || null,
         });
         cerrarModal();
         mostrarExito(id ? 'Objetivo actualizado.' : 'Objetivo creado.');
