@@ -183,6 +183,45 @@ $vigi = $stmt->fetch();
 </div>
 
 <script src="js/app.js"></script>
+
+<!-- HELP FAB -->
+<button class="help-fab" id="helpFabDash" title="Ayuda" aria-label="Ayuda">?</button>
+
+<!-- HELP MODAL -->
+<div class="help-overlay" id="helpOverlayDash">
+    <div class="help-modal">
+        <div class="help-modal-header">
+            <h2>&#x2753; ¿Cómo registrar asistencia?</h2>
+            <button class="help-modal-close" id="helpCloseDash" aria-label="Cerrar">&times;</button>
+        </div>
+
+        <div class="help-step">
+            <div class="help-step-num">1</div>
+            <div class="help-step-text">
+                Seleccione el <strong>tipo de novedad</strong> en el formulario.
+            </div>
+        </div>
+
+        <div class="help-step">
+            <div class="help-step-num">2</div>
+            <div class="help-step-text">
+                Si está <strong>ingresando</strong> a su puesto, seleccione <strong>"Entrada"</strong>. Si ya se está <strong>retirando</strong>, seleccione <strong>"Salida"</strong>.
+            </div>
+        </div>
+
+        <div class="help-step">
+            <div class="help-step-num">3</div>
+            <div class="help-step-text">
+                Para ambos casos, <strong>espere a que la ubicación se calibre</strong> correctamente antes de confirmar.
+            </div>
+        </div>
+
+        <div class="help-note">
+            <span>&#x26A0; Importante:</span> Si detecta algún problema, por favor haga el reporte usando el botón <strong>"Reportar un problema"</strong> que se encuentra en la parte inferior de la pantalla.
+        </div>
+    </div>
+</div>
+
 <script>
 (function reloj() {
     const DIAS   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -263,6 +302,19 @@ document.getElementById('formReporte').addEventListener('submit', async function
 
     btn.disabled    = false;
     btn.textContent = 'Enviar reporte';
+});
+
+// ---- Help modal (dashboard) ----
+document.getElementById('helpFabDash').addEventListener('click', function() {
+    document.getElementById('helpOverlayDash').classList.add('show');
+});
+
+document.getElementById('helpCloseDash').addEventListener('click', function() {
+    document.getElementById('helpOverlayDash').classList.remove('show');
+});
+
+document.getElementById('helpOverlayDash').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('show');
 });
 </script>
 
