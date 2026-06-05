@@ -123,7 +123,64 @@ $vigi = $stmt->fetch();
 
 </main>
 
-<footer class="app-footer">TDV Seguridad &mdash; <?= date('d/m/Y') ?></footer>
+<footer class="app-footer">
+    TDV Seguridad &mdash; <?= date('d/m/Y') ?>
+    &nbsp;|&nbsp;
+    <button onclick="abrirReporte()"
+        style="background:none;border:none;color:var(--text-muted);font-size:.78rem;
+               cursor:pointer;text-decoration:underline;padding:0;">
+        &#x26A0; Reportar un problema
+    </button>
+</footer>
+
+<!-- MODAL reporte de error -->
+<div id="modalReporte"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+            z-index:1000;align-items:center;justify-content:center;padding:1rem;">
+    <div style="background:#fff;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.25);
+                width:100%;max-width:460px;padding:1.8rem;">
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;">
+            <strong style="font-size:1.05rem;color:var(--primary);">&#x26A0; Reportar un problema</strong>
+            <button onclick="cerrarReporte()"
+                style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);">&#x2715;</button>
+        </div>
+
+        <div class="alert alert-danger"  id="repError" role="alert"><span>&#9888;</span><span id="repErrorMsg"></span></div>
+        <div class="alert alert-success" id="repOk"    role="alert"><span>&#9989;</span><span id="repOkMsg"></span></div>
+
+        <form id="formReporte" novalidate>
+
+            <div class="form-group">
+                <label for="repAccion">¿Qué estabas intentando hacer? <span style="font-weight:400;color:var(--text-muted)">(opcional)</span></label>
+                <select id="repAccion">
+                    <option value="">— Seleccioná —</option>
+                    <option>Iniciar sesión</option>
+                    <option>Confirmar asistencia / entrada</option>
+                    <option>Confirmar salida</option>
+                    <option>Registrar una novedad</option>
+                    <option>Ver mis registros del día</option>
+                    <option>Otro</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="repMensaje">¿Qué mensaje de error apareció en pantalla? <span style="font-weight:400;color:var(--text-muted)">(opcional)</span></label>
+                <input type="text" id="repMensaje" placeholder="Ej: «Fuera del área permitida»">
+            </div>
+
+            <div class="form-group">
+                <label for="repDesc">Descripción del problema <span style="color:var(--danger)">*</span></label>
+                <textarea id="repDesc" rows="3"
+                    placeholder="Contá con detalle qué pasó, qué esperabas que ocurriera y qué ocurrió en cambio..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btnEnviarRep">
+                Enviar reporte
+            </button>
+        </form>
+    </div>
+</div>
 
 <script src="js/app.js"></script>
 <script>
@@ -142,6 +199,71 @@ $vigi = $stmt->fetch();
     tick();
     setInterval(tick, 1000);
 })();
+
+// ---- Modal reporte de error --------------------------------
+function abrirReporte() {
+    document.getElementById('formReporte').reset();
+    document.getElementById('repError').classList.remove('show');
+    document.getElementById('repOk').classList.remove('show');
+    const m = document.getElementById('modalReporte');
+    m.style.display = 'flex';
+}
+
+function cerrarReporte() {
+    document.getElementById('modalReporte').style.display = 'none';
+}
+
+document.getElementById('modalReporte').addEventListener('click', function(e) {
+    if (e.target === this) cerrarReporte();
+});
+
+document.getElementById('formReporte').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const errDiv = document.getElementById('repError');
+    const okDiv  = document.getElementById('repOk');
+    errDiv.classList.remove('show');
+    okDiv.classList.remove('show');
+
+    const accion        = document.getElementById('repAccion').value;
+    const mensaje_error = document.getElementById('repMensaje').value.trim();
+    const descripcion   = document.getElementById('repDesc').value.trim();
+
+    if (!descripcion) {
+        document.getElementById('repErrorMsg').textContent = 'Por favor describí el problema.';
+        errDiv.classList.add('show'); return;
+    }
+
+    const btn = document.getElementById('btnEnviarRep');
+    btn.disabled    = true;
+    btn.textContent = 'Enviando...';
+
+    try {
+        const res = await fetch('api/reportar_error.php', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({
+                accion, mensaje_error, descripcion,
+                user_agent: navigator.userAgent
+            })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            document.getElementById('formReporte').reset();
+            document.getElementById('repOkMsg').textContent = data.mensaje;
+            okDiv.classList.add('show');
+            setTimeout(cerrarReporte, 3000);
+        } else {
+            document.getElementById('repErrorMsg').textContent = data.error || 'Error al enviar.';
+            errDiv.classList.add('show');
+        }
+    } catch(err) {
+        document.getElementById('repErrorMsg').textContent = 'No se pudo conectar al servidor.';
+        errDiv.classList.add('show');
+    }
+
+    btn.disabled    = false;
+    btn.textContent = 'Enviar reporte';
+});
 </script>
 
 </body>
