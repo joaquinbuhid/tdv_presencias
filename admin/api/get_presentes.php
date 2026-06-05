@@ -29,18 +29,30 @@ $stmt = $db->query(
      ORDER BY o.nombre, v.apellido"
 );
 
-$rows = $stmt->fetchAll();
+$rows  = $stmt->fetchAll();
+$ahora = date('H:i'); // hora actual (timezone ya fijado en config/db.php)
 
 foreach ($rows as &$r) {
+    $t_entrada = $r['turno_entrada'] ? substr($r['turno_entrada'], 0, 5) : null;
+    $t_salida  = $r['turno_salida']  ? substr($r['turno_salida'],  0, 5) : null;
+
     if (!$r['id_objetivo']) {
         $r['estado'] = 'sin-objetivo';
+
     } elseif ($r['hora_entrada_hoy'] && $r['hora_salida_hoy']) {
         $r['estado'] = 'completado';
+
     } elseif ($r['hora_entrada_hoy']) {
-        $r['estado'] = 'presente';
+        // Registró entrada pero no salida:
+        // si la hora de salida del turno ya pasó → alerta
+        $r['estado'] = ($t_salida && $ahora > $t_salida) ? 'sin-salida' : 'presente';
+
     } else {
-        $r['estado'] = 'ausente';
+        // No registró entrada:
+        // si el turno todavía no empezó → "por iniciar", si ya debería haber empezado → "ausente"
+        $r['estado'] = ($t_entrada && $ahora < $t_entrada) ? 'por-iniciar' : 'ausente';
     }
+
     // Formatear horas HH:MM
     foreach (['hora_entrada_hoy','hora_salida_hoy','ultima_actividad','turno_entrada','turno_salida'] as $campo) {
         if ($r[$campo]) $r[$campo] = substr($r[$campo], 0, 5);

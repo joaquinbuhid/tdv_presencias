@@ -78,9 +78,11 @@ $adminNombre = $_SESSION['nombre_completo'] ?? 'Administrador';
             transition: transform .15s;
         }
         .guard-card:hover { transform: translateY(-2px); }
-        .guard-card.presente   { border-left-color: var(--success); }
-        .guard-card.ausente    { border-left-color: var(--danger);  }
-        .guard-card.completado { border-left-color: var(--accent);  }
+        .guard-card.presente    { border-left-color: var(--success); }
+        .guard-card.ausente     { border-left-color: var(--danger);  }
+        .guard-card.completado  { border-left-color: var(--accent);  }
+        .guard-card.sin-salida  { border-left-color: #e67e22; background: #fffaf5; }
+        .guard-card.por-iniciar { border-left-color: var(--border); }
         .guard-card.sin-objetivo { border-left-color: var(--text-muted); opacity:.7; }
 
         .gc-name { font-size: 1rem; font-weight: 700; color: var(--text); }
@@ -93,9 +95,11 @@ $adminNombre = $_SESSION['nombre_completo'] ?? 'Administrador';
             font-weight: 700;
             margin-bottom: .6rem;
         }
-        .badge-presente   { background: #eafaf1; color: #1e8449; }
-        .badge-ausente    { background: #fdecea; color: #c0392b; }
-        .badge-completado { background: #ebf5fb; color: #1a5276; }
+        .badge-presente    { background: #eafaf1; color: #1e8449; }
+        .badge-ausente     { background: #fdecea; color: #c0392b; }
+        .badge-completado  { background: #ebf5fb; color: #1a5276; }
+        .badge-sin-salida  { background: #fef3e2; color: #e67e22; }
+        .badge-por-iniciar { background: #f0f2f5; color: var(--text-muted); }
         .badge-sin-objetivo { background: #f0f2f5; color: var(--text-muted); }
 
         .gc-times {
@@ -185,6 +189,10 @@ $adminNombre = $_SESSION['nombre_completo'] ?? 'Administrador';
             <div class="num num-completado" id="cntCompletado">—</div>
             <div class="lbl">Turno completo</div>
         </div>
+        <div class="summary-card" id="cardSinSalida" style="display:none;">
+            <div class="num" style="color:#e67e22;" id="cntSinSalida">0</div>
+            <div class="lbl">Sin registrar salida</div>
+        </div>
         <div class="summary-card">
             <div class="num num-total"     id="cntTotal">—</div>
             <div class="lbl">Total</div>
@@ -262,23 +270,49 @@ function renderCards(guards) {
         return;
     }
 
-    const labels  = { presente:'En turno', ausente:'Ausente', completado:'Turno completado', 'sin-objetivo':'Sin objetivo' };
-    const badges  = { presente:'badge-presente', ausente:'badge-ausente', completado:'badge-completado', 'sin-objetivo':'badge-sin-objetivo' };
+    const labels = {
+        'presente'    : 'En turno',
+        'ausente'     : 'Ausente',
+        'completado'  : 'Turno completado',
+        'sin-salida'  : 'Sin registrar salida',
+        'por-iniciar' : 'Por iniciar',
+        'sin-objetivo': 'Sin objetivo',
+    };
+    const badges = {
+        'presente'    : 'badge-presente',
+        'ausente'     : 'badge-ausente',
+        'completado'  : 'badge-completado',
+        'sin-salida'  : 'badge-sin-salida',
+        'por-iniciar' : 'badge-por-iniciar',
+        'sin-objetivo': 'badge-sin-objetivo',
+    };
 
+    let sinSalida = 0;
     grid.innerHTML = guards.map(g => {
         if (g.estado === 'presente')   presente++;
         if (g.estado === 'ausente')    ausente++;
         if (g.estado === 'completado') completado++;
+        if (g.estado === 'sin-salida') sinSalida++;
 
-        const entrada = g.hora_entrada_hoy || '<span class="empty">—</span>';
-        const salida  = g.hora_salida_hoy  || '<span class="empty">—</span>';
+        const turnoTxt = (g.turno_entrada && g.turno_salida)
+            ? `<span style="font-size:.72rem;color:var(--text-muted);">Turno: ${esc(g.turno_entrada)} — ${esc(g.turno_salida)} hs</span>`
+            : '';
+
+        const alertaSinSalida = g.estado === 'sin-salida'
+            ? `<div style="font-size:.75rem;color:#e67e22;margin-top:.4rem;font-weight:600;">
+                 ⚠ Hora de salida superada sin registrar egreso
+               </div>`
+            : '';
 
         return `
         <div class="guard-card ${esc(g.estado)}">
             <div class="gc-name">${esc(g.nombre)} ${esc(g.apellido)}</div>
             <div class="gc-obj">&#x1F4CD; ${esc(g.objetivo_nombre || 'Sin objetivo asignado')}</div>
-            <div class="gc-badge ${badges[g.estado] || 'badge-sin-objetivo'}">${labels[g.estado] || g.estado}</div>
-            <div class="gc-times">
+            ${turnoTxt}
+            <div class="gc-badge ${badges[g.estado] || 'badge-sin-objetivo'}" style="margin-top:.5rem;">
+                ${labels[g.estado] || g.estado}
+            </div>
+            <div class="gc-times" style="margin-top:.5rem;">
                 <div class="gc-time-item">
                     <span class="tl">Entrada</span>
                     <span class="tv">${g.hora_entrada_hoy ? g.hora_entrada_hoy + ' hs' : '—'}</span>
@@ -288,11 +322,7 @@ function renderCards(guards) {
                     <span class="tv">${g.hora_salida_hoy ? g.hora_salida_hoy + ' hs' : '—'}</span>
                 </div>
             </div>
-            ${g.ultima_actividad && !g.hora_salida_hoy && g.hora_entrada_hoy
-                ? `<div style="font-size:.72rem;color:var(--text-muted);margin-top:.5rem;">
-                     Última actividad: ${esc(g.ultima_actividad)} hs
-                   </div>`
-                : ''}
+            ${alertaSinSalida}
         </div>`;
     }).join('');
 
@@ -300,6 +330,13 @@ function renderCards(guards) {
     document.getElementById('cntAusente').textContent    = ausente;
     document.getElementById('cntCompletado').textContent = completado;
     document.getElementById('cntTotal').textContent      = guards.filter(g => g.id_objetivo).length;
+
+    // Mostrar contador de sin-salida si hay alguno
+    const cntSinSalida = document.getElementById('cntSinSalida');
+    if (cntSinSalida) {
+        cntSinSalida.textContent = sinSalida;
+        document.getElementById('cardSinSalida').style.display = sinSalida > 0 ? '' : 'none';
+    }
 }
 
 function esc(s) {
