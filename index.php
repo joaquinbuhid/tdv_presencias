@@ -109,71 +109,74 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 });
 </script>
 
-<!-- HELP FAB -->
-<button class="help-fab" id="helpFab" title="Ayuda" aria-label="Ayuda">?</button>
+<!-- HELP DROPDOWN -->
+<div class="help-dropdown-wrap" id="helpWrap">
+    <div class="help-dropdown-panel" id="helpPanel">
+        <div class="help-dropdown-inner">
+            <div class="help-dropdown-title">&#x2753; ¿Cómo ingresar?</div>
 
-<!-- HELP MODAL -->
-<div class="help-overlay" id="helpOverlay">
-    <div class="help-modal">
-        <div class="help-modal-header">
-            <h2>&#x2753; ¿Cómo ingresar?</h2>
-            <button class="help-modal-close" id="helpClose" aria-label="Cerrar">&times;</button>
-        </div>
-
-        <div class="help-step">
-            <div class="help-step-num">1</div>
-            <div class="help-step-text">
-                Si es la <strong>primera vez</strong> que ingresa, presione en <strong>"Solicitar cuenta"</strong> (el enlace debajo del botón Ingresar).
+            <div class="help-step">
+                <div class="help-step-num">1</div>
+                <div class="help-step-text">
+                    Si es la <strong>primera vez</strong> que ingresa, presione en <strong>"Solicitar cuenta"</strong> (el enlace debajo del botón Ingresar).
+                </div>
             </div>
-        </div>
 
-        <div class="help-step">
-            <div class="help-step-num">2</div>
-            <div class="help-step-text">
-                Rellene todos los datos solicitados. Genere su <strong>usuario y contraseña</strong>. El usuario puede ser cualquiera (por ejemplo, con el formato: <strong>nombreapellido</strong>). La contraseña también puede ser del formato que usted prefiera.
+            <div class="help-step">
+                <div class="help-step-num">2</div>
+                <div class="help-step-text">
+                    Rellene todos los datos solicitados. Genere su <strong>usuario y contraseña</strong>. El usuario puede ser cualquiera (por ejemplo: <strong>nombreapellido</strong>). La contraseña también puede ser del formato que prefiera.
+                </div>
             </div>
-        </div>
 
-        <div class="help-step">
-            <div class="help-step-num">3</div>
-            <div class="help-step-text">
-                Al terminar presione en <strong>"Solicitar cuenta"</strong>.
+            <div class="help-step">
+                <div class="help-step-num">3</div>
+                <div class="help-step-text">
+                    Al terminar presione en <strong>"Solicitar cuenta"</strong>.
+                </div>
             </div>
-        </div>
 
-        <div class="help-step">
-            <div class="help-step-num">4</div>
-            <div class="help-step-text">
-                <strong>Espere aproximadamente 20 minutos</strong> a que le habiliten su cuenta.
+            <div class="help-step">
+                <div class="help-step-num">4</div>
+                <div class="help-step-text">
+                    <strong>Espere aproximadamente 20 minutos</strong> a que le habiliten su cuenta.
+                </div>
             </div>
-        </div>
 
-        <div class="help-step">
-            <div class="help-step-num">5</div>
-            <div class="help-step-text">
-                Una vez habilitada, podrá <strong>ingresar con normalidad</strong> usando su usuario y contraseña.
+            <div class="help-step">
+                <div class="help-step-num">5</div>
+                <div class="help-step-text">
+                    Una vez habilitada, podrá <strong>ingresar con normalidad</strong> usando su usuario y contraseña.
+                </div>
             </div>
-        </div>
 
-        <div class="help-note">
-            <span>&#x1F4A1; Tip:</span> Si ya tiene cuenta y no puede ingresar, verifique que su usuario y contraseña estén correctos o comuníquese con su supervisor.
+            <div class="help-note">
+                <span>&#x1F4A1; Tip:</span> Si ya tiene cuenta y no puede ingresar, verifique que su usuario y contraseña estén correctos o comuníquese con su supervisor.
+            </div>
         </div>
     </div>
+    <button class="help-fab" id="helpFab" title="Ayuda" aria-label="Ayuda">?</button>
 </div>
 
 <script>
-// ---- Help modal ----
-document.getElementById('helpFab').addEventListener('click', function() {
-    document.getElementById('helpOverlay').classList.add('show');
-});
+// ---- Help dropdown toggle ----
+(function() {
+    const fab   = document.getElementById('helpFab');
+    const panel = document.getElementById('helpPanel');
 
-document.getElementById('helpClose').addEventListener('click', function() {
-    document.getElementById('helpOverlay').classList.remove('show');
-});
+    fab.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const open = panel.classList.toggle('open');
+        fab.classList.toggle('active', open);
+    });
 
-document.getElementById('helpOverlay').addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('show');
-});
+    document.addEventListener('click', function(e) {
+        if (!document.getElementById('helpWrap').contains(e.target)) {
+            panel.classList.remove('open');
+            fab.classList.remove('active');
+        }
+    });
+})();
 </script>
 
 </body>

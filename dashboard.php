@@ -42,7 +42,7 @@ $vigi = $stmt->fetch();
     </div>
     <div class="header-user">
         <strong><?= htmlspecialchars($vigi['nombre'] . ' ' . $vigi['apellido']) ?></strong>
-        <a href="api/logout.php" style="color:rgba(255,255,255,.75);font-size:.8rem;text-decoration:none;">
+        <a href="api/logout.php" style="color:rgba(255,255,255,.75);font-size:.95rem;text-decoration:none;">
             Cerrar sesión
         </a>
     </div>
@@ -52,13 +52,13 @@ $vigi = $stmt->fetch();
 <main class="app-content">
 
     <!-- Reloj -->
-    <div style="text-align:center;padding:.8rem 0 .2rem;">
+    <div style="text-align:center;padding:1rem 0 .3rem;">
         <div id="relojHora" style="
-            font-size:2.8rem;font-weight:700;letter-spacing:.05em;
+            font-size:3.4rem;font-weight:700;letter-spacing:.05em;
             color:var(--primary);font-variant-numeric:tabular-nums;line-height:1;">
             --:--:--
         </div>
-        <div id="relojFecha" style="font-size:.82rem;color:var(--text-muted);margin-top:.2rem;"></div>
+        <div id="relojFecha" style="font-size:1rem;color:var(--text-muted);margin-top:.35rem;"></div>
     </div>
 
     <!-- Objetivo asignado -->
@@ -66,7 +66,7 @@ $vigi = $stmt->fetch();
         <span class="objetivo-badge">
             &#x1F4CD; <?= htmlspecialchars($vigi['obj_nombre'] ?? 'Sin objetivo') ?>
         </span>
-        <div style="font-size:.8rem;color:var(--text-muted);margin-top:.3rem;">
+        <div style="font-size:1rem;color:var(--text-muted);margin-top:.35rem;">
             Turno: <?= substr($vigi['hora_entrada'],0,5) ?> hs &mdash; <?= substr($vigi['hora_salida'],0,5) ?> hs
         </div>
     </div>
@@ -127,7 +127,7 @@ $vigi = $stmt->fetch();
     TDV Seguridad &mdash; <?= date('d/m/Y') ?>
     &nbsp;|&nbsp;
     <button onclick="abrirReporte()"
-        style="background:none;border:none;color:var(--text-muted);font-size:.78rem;
+        style="background:none;border:none;color:var(--text-muted);font-size:.9rem;
                cursor:pointer;text-decoration:underline;padding:0;">
         &#x26A0; Reportar un problema
     </button>
@@ -184,42 +184,39 @@ $vigi = $stmt->fetch();
 
 <script src="js/app.js"></script>
 
-<!-- HELP FAB -->
-<button class="help-fab" id="helpFabDash" title="Ayuda" aria-label="Ayuda">?</button>
+<!-- HELP DROPDOWN -->
+<div class="help-dropdown-wrap" id="helpWrapDash">
+    <div class="help-dropdown-panel" id="helpPanelDash">
+        <div class="help-dropdown-inner">
+            <div class="help-dropdown-title">&#x2753; ¿Cómo registrar asistencia?</div>
 
-<!-- HELP MODAL -->
-<div class="help-overlay" id="helpOverlayDash">
-    <div class="help-modal">
-        <div class="help-modal-header">
-            <h2>&#x2753; ¿Cómo registrar asistencia?</h2>
-            <button class="help-modal-close" id="helpCloseDash" aria-label="Cerrar">&times;</button>
-        </div>
-
-        <div class="help-step">
-            <div class="help-step-num">1</div>
-            <div class="help-step-text">
-                Seleccione el <strong>tipo de novedad</strong> en el formulario.
+            <div class="help-step">
+                <div class="help-step-num">1</div>
+                <div class="help-step-text">
+                    Seleccione el <strong>tipo de novedad</strong> en el formulario.
+                </div>
             </div>
-        </div>
 
-        <div class="help-step">
-            <div class="help-step-num">2</div>
-            <div class="help-step-text">
-                Si está <strong>ingresando</strong> a su puesto, seleccione <strong>"Entrada"</strong>. Si ya se está <strong>retirando</strong>, seleccione <strong>"Salida"</strong>.
+            <div class="help-step">
+                <div class="help-step-num">2</div>
+                <div class="help-step-text">
+                    Si está <strong>ingresando</strong> a su puesto, seleccione <strong>"Entrada"</strong>. Si ya se está <strong>retirando</strong>, seleccione <strong>"Salida"</strong>.
+                </div>
             </div>
-        </div>
 
-        <div class="help-step">
-            <div class="help-step-num">3</div>
-            <div class="help-step-text">
-                Para ambos casos, <strong>espere a que la ubicación se calibre</strong> correctamente antes de confirmar.
+            <div class="help-step">
+                <div class="help-step-num">3</div>
+                <div class="help-step-text">
+                    Para ambos casos, <strong>espere a que la ubicación se calibre</strong> correctamente antes de confirmar.
+                </div>
             </div>
-        </div>
 
-        <div class="help-note">
-            <span>&#x26A0; Importante:</span> Si detecta algún problema, por favor haga el reporte usando el botón <strong>"Reportar un problema"</strong> que se encuentra en la parte inferior de la pantalla.
+            <div class="help-note">
+                <span>&#x26A0; Importante:</span> Si detecta algún problema, por favor haga el reporte usando el botón <strong>"Reportar un problema"</strong> que se encuentra en la parte inferior de la pantalla.
+            </div>
         </div>
     </div>
+    <button class="help-fab" id="helpFabDash" title="Ayuda" aria-label="Ayuda">?</button>
 </div>
 
 <script>
@@ -304,18 +301,24 @@ document.getElementById('formReporte').addEventListener('submit', async function
     btn.textContent = 'Enviar reporte';
 });
 
-// ---- Help modal (dashboard) ----
-document.getElementById('helpFabDash').addEventListener('click', function() {
-    document.getElementById('helpOverlayDash').classList.add('show');
-});
+// ---- Help dropdown toggle (dashboard) ----
+(function() {
+    const fab   = document.getElementById('helpFabDash');
+    const panel = document.getElementById('helpPanelDash');
 
-document.getElementById('helpCloseDash').addEventListener('click', function() {
-    document.getElementById('helpOverlayDash').classList.remove('show');
-});
+    fab.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const open = panel.classList.toggle('open');
+        fab.classList.toggle('active', open);
+    });
 
-document.getElementById('helpOverlayDash').addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('show');
-});
+    document.addEventListener('click', function(e) {
+        if (!document.getElementById('helpWrapDash').contains(e.target)) {
+            panel.classList.remove('open');
+            fab.classList.remove('active');
+        }
+    });
+})();
 </script>
 
 </body>
