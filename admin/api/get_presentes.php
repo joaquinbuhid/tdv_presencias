@@ -49,8 +49,9 @@ foreach ($rows as &$r) {
 
     } else {
         // No registró entrada:
-        // si el turno todavía no empezó → "por iniciar", si ya debería haber empezado → "ausente"
-        $r['estado'] = ($t_entrada && $ahora < $t_entrada) ? 'por-iniciar' : 'ausente';
+        // solo es "ausente" si ya pasó la hora de salida del turno (turno finalizado sin presentarse)
+        // antes de eso → "por iniciar"
+        $r['estado'] = ($t_salida && $ahora > $t_salida) ? 'ausente' : 'por-iniciar';
     }
 
     // Formatear horas HH:MM
