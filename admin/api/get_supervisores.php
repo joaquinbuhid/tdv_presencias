@@ -11,7 +11,8 @@ if (empty($_SESSION['es_admin'])) {
 
 $db   = getDB();
 $stmt = $db->query(
-    "SELECT s.*,
+    "SELECT s.id_supervisor, s.nombre, s.apellido, s.dni, s.telefono, s.email,
+            s.usuario, s.estado,
             COUNT(o.id_objetivo) AS objetivos_asignados
      FROM supervisores s
      LEFT JOIN objetivo o ON o.supervisor_id = s.id_supervisor

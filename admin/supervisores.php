@@ -152,6 +152,22 @@ $adminNombre = $_SESSION['nombre_completo'] ?? 'Administrador';
                 <input type="email" id="fEmail">
             </div>
 
+            <div class="form-group">
+                <label for="fUsuario">Usuario <span style="color:var(--danger)">*</span></label>
+                <input type="text" id="fUsuario" required autocomplete="off">
+            </div>
+
+            <div id="wrapCambiarClave" style="display:none;margin-bottom:.2rem;">
+                <label style="font-size:.85rem;display:flex;align-items:center;gap:.5rem;cursor:pointer;">
+                    <input type="checkbox" id="fCambiarClave" onchange="toggleClave()">
+                    Cambiar contraseña
+                </label>
+            </div>
+            <div id="wrapClaveInput" class="form-group">
+                <label for="fContrasena">Contraseña <span style="color:var(--danger)" id="lblClaveReq">*</span></label>
+                <input type="password" id="fContrasena" autocomplete="new-password">
+            </div>
+
             <div style="display:flex;gap:.8rem;justify-content:flex-end;margin-top:1rem;">
                 <button type="button" class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
                 <button type="submit" class="btn btn-primary" id="btnGuardar" style="width:auto;min-width:120px;">
@@ -191,6 +207,7 @@ async function cargarSupervisores() {
                 <td>${esc(s.dni)}</td>
                 <td>${s.telefono ? esc(s.telefono) : '<span style="color:var(--text-muted)">—</span>'}</td>
                 <td>${s.email    ? esc(s.email)    : '<span style="color:var(--text-muted)">—</span>'}</td>
+                <td>${s.usuario  ? esc(s.usuario)  : '<span style="color:var(--text-muted)">—</span>'}</td>
                 <td>
                     <span class="obj-count" title="Objetivos asignados">${objCount} objetivo${objCount !== 1 ? 's' : ''}</span>
                 </td>
@@ -206,6 +223,7 @@ async function cargarSupervisores() {
                     <th>DNI</th>
                     <th>Teléfono</th>
                     <th>Email</th>
+                    <th>Usuario</th>
                     <th>Objetivos</th>
                     <th>Estado</th>
                     <th>Acciones</th>
@@ -223,7 +241,20 @@ function abrirModal(id) {
     document.getElementById('fId').value = id;
     document.getElementById('modalTitle').textContent = id ? 'Editar supervisor' : 'Nuevo supervisor';
 
+    // Contraseña: requerida en creación, opcional en edición
+    const wrapCambiar  = document.getElementById('wrapCambiarClave');
+    const wrapClave    = document.getElementById('wrapClaveInput');
+    const lblReq       = document.getElementById('lblClaveReq');
+    const cbCambiar    = document.getElementById('fCambiarClave');
+    const inputClave   = document.getElementById('fContrasena');
+
     if (id) {
+        wrapCambiar.style.display = '';
+        cbCambiar.checked         = false;
+        wrapClave.style.display   = 'none';
+        inputClave.required       = false;
+        lblReq.style.display      = 'none';
+
         apiFetch('api/get_supervisores.php').then(list => {
             const s = list.find(x => x.id_supervisor == id);
             if (!s) return;
@@ -232,7 +263,13 @@ function abrirModal(id) {
             document.getElementById('fDni').value      = s.dni;
             document.getElementById('fTelefono').value = s.telefono || '';
             document.getElementById('fEmail').value    = s.email    || '';
+            document.getElementById('fUsuario').value  = s.usuario  || '';
         });
+    } else {
+        wrapCambiar.style.display = 'none';
+        wrapClave.style.display   = '';
+        inputClave.required       = true;
+        lblReq.style.display      = '';
     }
 
     document.getElementById('modalOverlay').classList.add('open');
@@ -241,6 +278,16 @@ function abrirModal(id) {
 
 function cerrarModal() {
     document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function toggleClave() {
+    const cb    = document.getElementById('fCambiarClave');
+    const wrap  = document.getElementById('wrapClaveInput');
+    const label = document.getElementById('lblClaveReq');
+    wrap.style.display  = cb.checked ? '' : 'none';
+    label.style.display = cb.checked ? '' : 'none';
+    document.getElementById('fContrasena').required = cb.checked;
+    if (cb.checked) document.getElementById('fContrasena').focus();
 }
 
 document.getElementById('modalOverlay').addEventListener('click', function(e) {
@@ -252,15 +299,24 @@ async function onGuardar(e) {
     const errDiv  = document.getElementById('modalError');
     errDiv.classList.remove('show');
 
-    const id       = parseInt(document.getElementById('fId').value);
-    const nombre   = document.getElementById('fNombre').value.trim();
-    const apellido = document.getElementById('fApellido').value.trim();
-    const dni      = document.getElementById('fDni').value.trim();
-    const telefono = document.getElementById('fTelefono').value.trim();
-    const email    = document.getElementById('fEmail').value.trim();
+    const id         = parseInt(document.getElementById('fId').value);
+    const nombre     = document.getElementById('fNombre').value.trim();
+    const apellido   = document.getElementById('fApellido').value.trim();
+    const dni        = document.getElementById('fDni').value.trim();
+    const telefono   = document.getElementById('fTelefono').value.trim();
+    const email      = document.getElementById('fEmail').value.trim();
+    const usuario    = document.getElementById('fUsuario').value.trim();
+    const cbCambiar  = document.getElementById('fCambiarClave');
+    const contrasena = (id === 0 || cbCambiar.checked)
+        ? document.getElementById('fContrasena').value
+        : '';
 
-    if (!nombre || !apellido || !dni) {
-        document.getElementById('modalErrorMsg').textContent = 'Complete nombre, apellido y DNI.';
+    if (!nombre || !apellido || !dni || !usuario) {
+        document.getElementById('modalErrorMsg').textContent = 'Complete nombre, apellido, DNI y usuario.';
+        errDiv.classList.add('show'); return;
+    }
+    if (id === 0 && !contrasena) {
+        document.getElementById('modalErrorMsg').textContent = 'La contraseña es requerida.';
         errDiv.classList.add('show'); return;
     }
 
@@ -269,7 +325,7 @@ async function onGuardar(e) {
     btn.textContent = 'Guardando...';
 
     try {
-        await apiFetch('api/guardar_supervisor.php', 'POST', { id, nombre, apellido, dni, telefono, email });
+        await apiFetch('api/guardar_supervisor.php', 'POST', { id, nombre, apellido, dni, telefono, email, usuario, contrasena });
         cerrarModal();
         mostrarExito(id ? 'Supervisor actualizado.' : 'Supervisor creado.');
         cargarSupervisores();

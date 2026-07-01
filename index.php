@@ -93,7 +93,9 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 
         if (res.ok && data.success) {
             btn.textContent = 'Accediendo...';
-            window.location.href = data.es_admin ? 'admin/dashboard.php' : 'dashboard.php';
+            window.location.href = data.es_admin
+                ? 'admin/dashboard.php'
+                : (data.es_supervisor ? 'supervisor/dashboard.php' : 'dashboard.php');
         } else {
             errMsg.textContent = data.error || 'Error al iniciar sesión.';
             errDiv.classList.add('show');
