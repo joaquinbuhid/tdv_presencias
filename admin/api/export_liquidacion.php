@@ -18,6 +18,11 @@ if (!$data) {
 $format = $_GET['format'] ?? '';
 
 if ($format === 'excel') {
+    // Clean output buffer to prevent stray characters or PHP warnings from corrupting the Excel
+    if (ob_get_length()) {
+        ob_clean();
+    }
+    
     // Generate CSV (Excel compatible) with UTF-8 BOM
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="liquidacion_' . date('Ymd_His') . '.csv"');
@@ -281,7 +286,13 @@ if ($format === 'excel') {
         $pdf->Ln(4);
     }
     
-    $pdf->Output('I', 'liquidacion_' . date('Ymd_His') . '.pdf');
+    // Clean output buffer to prevent stray characters or PHP warnings from corrupting the PDF
+    if (ob_get_length()) {
+        ob_clean();
+    }
+    
+    // Use 'D' to force browser download instead of inline viewing ('I')
+    $pdf->Output('D', 'liquidacion_' . date('Ymd_His') . '.pdf');
     exit;
 } else {
     die("Formato no válido.");
