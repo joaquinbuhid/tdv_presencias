@@ -9,8 +9,8 @@ if (empty($_SESSION['es_admin'])) {
     exit;
 }
 
-require_once 'liquidacion_helper.php';
-require_once '../../fpdf.php';
+require_once __DIR__ . '/liquidacion_helper.php';
+require_once __DIR__ . '/../../fpdf.php';
 
 $data = $_SESSION['last_liquidacion'] ?? null;
 $title = $_SESSION['liquidacion_title'] ?? 'Reporte';
