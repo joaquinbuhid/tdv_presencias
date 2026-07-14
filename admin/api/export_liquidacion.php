@@ -1,7 +1,6 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+ini_set('display_errors', 0);
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE & ~E_WARNING);
 
 session_start();
 if (empty($_SESSION['es_admin'])) {
@@ -129,13 +128,13 @@ if ($format === 'excel') {
             // Title
             $this->SetFont('Arial', 'B', 13);
             $this->SetTextColor(26, 82, 118); // Dark blue
-            $this->Cell(0, 10, utf8_decode('TDV SEGURIDAD — REPORTE DE LIQUIDACIÓN DE HORAS'), 0, 1, 'L');
+            $this->Cell(0, 10, utf8ToLatin1('TDV SEGURIDAD — REPORTE DE LIQUIDACIÓN DE HORAS'), 0, 1, 'L');
             
             // Subtitle
             $this->SetFont('Arial', '', 9);
             $this->SetTextColor(127, 140, 141);
-            $this->Cell(0, 4, utf8_decode('Origen: ' . $this->reportTitle), 0, 1, 'L');
-            $this->Cell(0, 4, utf8_decode('Fecha generación: ' . date('d-m-Y H:i:s')), 0, 1, 'L');
+            $this->Cell(0, 4, utf8ToLatin1('Origen: ' . $this->reportTitle), 0, 1, 'L');
+            $this->Cell(0, 4, utf8ToLatin1('Fecha generación: ' . date('d-m-Y H:i:s')), 0, 1, 'L');
             
             $this->Ln(3);
             $this->SetDrawColor(26, 82, 118);
@@ -152,7 +151,7 @@ if ($format === 'excel') {
             
             $this->SetFont('Arial', 'I', 8);
             $this->SetTextColor(127, 140, 141);
-            $this->Cell(0, 10, utf8_decode('Página ') . $this->PageNo() . '/{nb}', 0, 0, 'C');
+            $this->Cell(0, 10, utf8ToLatin1('Página ') . $this->PageNo() . '/{nb}', 0, 0, 'C');
         }
     }
     
@@ -181,10 +180,10 @@ if ($format === 'excel') {
     
     $pdf->SetFont('Arial', 'B', 9);
     $pdf->SetTextColor(44, 62, 80);
-    $pdf->Cell(47, 10, utf8_decode('Vigiladores: ') . $total_vigiladores, 0, 0, 'C');
-    $pdf->Cell(47, 10, utf8_decode('Turnos Liquidados: ') . $total_shifts, 0, 0, 'C');
-    $pdf->Cell(48, 10, utf8_decode('Total Horas: ') . formatDecimalHours($total_hours), 0, 0, 'C');
-    $pdf->Cell(48, 10, utf8_decode('Anomalías: ') . $total_anomalies, 0, 1, 'C');
+    $pdf->Cell(47, 10, utf8ToLatin1('Vigiladores: ') . $total_vigiladores, 0, 0, 'C');
+    $pdf->Cell(47, 10, utf8ToLatin1('Turnos Liquidados: ') . $total_shifts, 0, 0, 'C');
+    $pdf->Cell(48, 10, utf8ToLatin1('Total Horas: ') . formatDecimalHours($total_hours), 0, 0, 'C');
+    $pdf->Cell(48, 10, utf8ToLatin1('Anomalías: ') . $total_anomalies, 0, 1, 'C');
     
     $pdf->Ln(5);
     
@@ -201,7 +200,7 @@ if ($format === 'excel') {
         $pdf->SetFillColor(230, 240, 250);
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetTextColor(21, 67, 96);
-        $pdf->Cell(130, 7, '  ' . utf8_decode($v['name']) . ' (ID: ' . $v['vid'] . ')', 1, 0, 'L', true);
+        $pdf->Cell(130, 7, '  ' . utf8ToLatin1($v['name']) . ' (ID: ' . $v['vid'] . ')', 1, 0, 'L', true);
         $pdf->Cell(60, 7, 'Total: ' . formatDecimalHours($total_v_hours) . ' hs  ', 1, 1, 'R', true);
         
         // Shifts Table Header
@@ -220,7 +219,7 @@ if ($format === 'excel') {
         $pdf->SetTextColor(44, 62, 80);
         
         if (empty($v['shifts'])) {
-            $pdf->Cell(190, 6, utf8_decode('Sin turnos liquidados válidos.'), 1, 1, 'C');
+            $pdf->Cell(190, 6, utf8ToLatin1('Sin turnos liquidados válidos.'), 1, 1, 'C');
         } else {
             foreach ($v['shifts'] as $s) {
                 $e_dt = new DateTime($s['entry']);
@@ -239,7 +238,7 @@ if ($format === 'excel') {
                     $pdf->SetFillColor(230, 240, 250);
                     $pdf->SetFont('Arial', 'B', 9);
                     $pdf->SetTextColor(21, 67, 96);
-                    $pdf->Cell(190, 6, '  ' . utf8_decode($v['name']) . ' (ID: ' . $v['vid'] . ') - Continuación', 1, 1, 'L', true);
+                    $pdf->Cell(190, 6, '  ' . utf8ToLatin1($v['name']) . ' (ID: ' . $v['vid'] . ') - Continuación', 1, 1, 'L', true);
                     $pdf->SetFont('Arial', 'B', 8);
                     $pdf->SetTextColor(255, 255, 255);
                     $pdf->SetFillColor(26, 82, 118);
@@ -267,7 +266,7 @@ if ($format === 'excel') {
                     }
                     $obs_text .= '...';
                 }
-                $pdf->Cell(70, 6, utf8_decode($obs_text), 1, 1, 'L');
+                $pdf->Cell(70, 6, utf8ToLatin1($obs_text), 1, 1, 'L');
             }
         }
         
@@ -275,14 +274,14 @@ if ($format === 'excel') {
         if (!empty($v['anomalies'])) {
             $pdf->SetFont('Arial', 'B', 8);
             $pdf->SetTextColor(192, 57, 43); // Red color for anomalies
-            $pdf->Cell(190, 5, utf8_decode('  Marcas huérfanas / inconsistencias:'), 'LR', 1, 'L');
+            $pdf->Cell(190, 5, utf8ToLatin1('  Marcas huérfanas / inconsistencias:'), 'LR', 1, 'L');
             $pdf->SetFont('Arial', 'I', 7.5);
             foreach ($v['anomalies'] as $a) {
                 if ($pdf->GetY() > 270) {
                     $pdf->AddPage();
                 }
                 $obs_part = $a['obs'] ? ' [Obs: ' . $a['obs'] . ']' : '';
-                $pdf->Cell(190, 4, utf8_decode('    · ' . $a['type'] . ': ' . $a['dt'] . $obs_part), 'LR', 1, 'L');
+                $pdf->Cell(190, 4, utf8ToLatin1('    · ' . $a['type'] . ': ' . $a['dt'] . $obs_part), 'LR', 1, 'L');
             }
             $pdf->Cell(190, 1, '', 'B', 1, 'L'); // bottom line
         }

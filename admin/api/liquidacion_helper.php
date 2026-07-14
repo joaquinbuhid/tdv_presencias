@@ -138,3 +138,19 @@ function formatDecimalHours($hours_decimal) {
     $m = $total_minutes % 60;
     return sprintf("%02d:%02d", $h, $m);
 }
+
+/**
+ * Safe UTF-8 to Latin1 (ISO-8859-1) conversion to prevent PHP 8.2+ deprecation warnings.
+ */
+function utf8ToLatin1($string) {
+    if ($string === null || $string === '') {
+        return '';
+    }
+    if (function_exists('mb_convert_encoding')) {
+        return mb_convert_encoding($string, 'ISO-8859-1', 'UTF-8');
+    }
+    if (function_exists('iconv')) {
+        return iconv('UTF-8', 'ISO-8859-1//TRANSLIT', $string);
+    }
+    return @utf8_decode($string);
+}
